@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="South Korea Top 50 K-Pop Comeback Intelligence — interactive portfolio dashboard"/>
+  <title>K-Pop Comeback Intelligence | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+  :root{
+    --bg:#06070b; --panel:#0d1018; --panel2:#111522; --line:#252a3a;
+    --text:#f4f6fb; --muted:#98a1b3; --cyan:#27e7ef; --pink:#ff3eb5;
+    --purple:#9b6cff; --green:#58e0a5; --shadow:0 0 28px rgba(39,231,239,.10),0 0 28px rgba(255,62,181,.08);
+  }
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(circle at 85% 5%,rgba(255,62,181,.10),transparent 26%),radial-gradient(circle at 10% 20%,rgba(39,231,239,.07),transparent 25%),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+  a{color:inherit;text-decoration:none}.app{display:flex;min-height:100vh}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;padding:24px 16px;background:rgba(7,8,13,.92);backdrop-filter:blur(16px);border-right:1px solid var(--line);z-index:20}
+  .brand{display:flex;gap:12px;align-items:center;padding:8px 10px 24px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--pink),var(--purple),var(--cyan));display:grid;place-items:center;font-weight:800;color:#05060a;box-shadow:0 0 24px rgba(255,62,181,.28)}
+  .brand h1{font:700 17px "Space Grotesk";margin:0}.brand p{font-size:10px;color:var(--muted);margin:3px 0 0}
+  .nav-title{font-size:10px;color:#697286;letter-spacing:.12em;text-transform:uppercase;padding:12px 10px 8px}
+  .nav button{display:block;width:100%;text-align:left;border:1px solid transparent;background:transparent;color:#aeb6c7;padding:11px 12px;border-radius:10px;margin:4px 0;cursor:pointer;font:600 13px Inter}
+  .nav button:hover,.nav button.active{background:linear-gradient(90deg,rgba(255,62,181,.12),rgba(39,231,239,.08));border-color:#292f40;color:#fff}
+  .side-note{position:absolute;bottom:18px;left:16px;right:16px;padding:12px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:10px;line-height:1.5}
+  main{margin-left:250px;width:calc(100% - 250px);padding:28px 32px 60px}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;gap:16px}
+  .eyebrow{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.topbar h2{margin:5px 0 0;font:700 28px "Space Grotesk"}
+  .top-actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:#0d111a;color:#fff;padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700;font-size:12px}.btn.primary{border-color:rgba(39,231,239,.4);box-shadow:0 0 18px rgba(39,231,239,.08)}
+  .filters{display:grid;grid-template-columns:1.2fr 1.4fr 1fr 1fr 1fr 1fr;gap:10px;padding:12px;border:1px solid var(--line);background:rgba(13,16,24,.85);border-radius:14px;margin-bottom:20px}
+  .field label{display:block;font-size:10px;color:#788196;margin:0 0 5px;text-transform:uppercase;letter-spacing:.08em}.field select,.field input{width:100%;background:#080b11;border:1px solid #2a3040;color:#fff;border-radius:8px;padding:9px 10px;outline:none}.field select:focus,.field input:focus{border-color:var(--cyan)}
+  .page{display:none}.page.active{display:block}.hero{padding:42px 42px 36px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,rgba(255,62,181,.10),rgba(39,231,239,.05) 50%,rgba(155,108,255,.08));box-shadow:var(--shadow);overflow:hidden;position:relative}
+  .hero:after{content:"";position:absolute;width:420px;height:420px;border:1px solid rgba(39,231,239,.16);border-radius:50%;right:-180px;top:-180px;box-shadow:0 0 70px rgba(39,231,239,.08)}
+  .hero h3{font:700 clamp(32px,4vw,58px) "Space Grotesk";line-height:1.02;margin:12px 0;max-width:900px}.hero h3 span{background:linear-gradient(90deg,var(--pink),#d68cff,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{max-width:760px;color:#aeb6c7;line-height:1.7;font-size:14px}.hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.tag{padding:7px 10px;border-radius:999px;border:1px solid #2b3142;color:#bfc7d7;font-size:10px;background:#0b0e15}
+  .grid{display:grid;gap:14px}.kpis{grid-template-columns:repeat(5,minmax(0,1fr));margin:16px 0}.kpi{background:linear-gradient(180deg,#10141e,#0b0e15);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}.kpi .label{font-size:10px;color:#7f899d;text-transform:uppercase;letter-spacing:.09em}.kpi .value{font:700 28px "Space Grotesk";margin-top:7px}.kpi .hint{font-size:10px;color:#687286;margin-top:5px}
+  .cols-2{grid-template-columns:1.35fr 1fr}.cols-3{grid-template-columns:repeat(3,1fr)}.cols-2-eq{grid-template-columns:1fr 1fr}
+  .card{background:rgba(12,15,23,.92);border:1px solid var(--line);border-radius:15px;padding:15px;min-width:0;box-shadow:var(--shadow)}.card h4{font-size:12px;margin:0 0 10px;letter-spacing:.02em}.sub{color:#727c90;font-size:10px;margin:-4px 0 10px}.chart{height:330px}.chart.sm{height:270px}
+  .section-title{margin:28px 0 10px;font:700 20px "Space Grotesk"}.section-copy{color:#8e98ab;font-size:12px;line-height:1.65;max-width:820px}
+  .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.data-table{width:100%;border-collapse:collapse;font-size:11px}.data-table th{position:sticky;top:0;background:#101722;color:#8994aa;text-align:left;text-transform:uppercase;letter-spacing:.06em;font-size:9px}.data-table td,.data-table th{padding:10px;border-bottom:1px solid #1d2230;white-space:nowrap}.data-table tr:hover td{background:#111622}.pill{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:9px;border:1px solid #2a3040}.pill.pink{border-color:rgba(255,62,181,.4);color:#ff86d0}.pill.cyan{border-color:rgba(39,231,239,.4);color:#75f5f8}
+  .insights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.insight{padding:14px;border-radius:12px;border:1px solid var(--line);background:#0b0e15}.insight strong{display:block;margin-bottom:5px;font-size:12px}.insight p{margin:0;color:#8e98ab;font-size:11px;line-height:1.55}
+  .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.gallery img{width:100%;display:block;border-radius:12px;border:1px solid var(--line);cursor:zoom-in}
+  .workflow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.step{border:1px solid var(--line);border-radius:12px;padding:14px;background:#0b0e15}.step .n{color:var(--cyan);font:700 20px "Space Grotesk"}.step strong{display:block;font-size:11px;margin:7px 0}.step span{font-size:10px;color:#7f899d;line-height:1.5}
+  .footer{margin-top:40px;color:#5e687b;font-size:10px;text-align:center;padding:20px;border-top:1px solid var(--line)}
+  @media(max-width:1100px){.sidebar{width:210px}.sidebar .brand p,.side-note{display:none}main{margin-left:210px;width:calc(100% - 210px);padding:22px}.filters{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(3,1fr)}.workflow{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:760px){.sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.app{display:block}.brand{padding-bottom:10px}.nav{display:flex;overflow:auto;gap:5px}.nav-title,.side-note{display:none}.nav button{min-width:max-content}.brand h1{font-size:15px}main{margin-left:0;width:100%;padding:16px}.topbar{align-items:flex-start}.top-actions{display:none}.filters{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:1fr 1fr}.cols-2,.cols-2-eq,.cols-3,.gallery{grid-template-columns:1fr}.insights,.workflow{grid-template-columns:1fr}.hero{padding:28px 22px}.chart{height:300px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">KP</div><div><h1>K-Pop Intelligence</h1><p>Portfolio Analytics App</p></div></div>
+    <div class="nav-title">Dashboard</div>
+    <nav class="nav">
+      <button class="active" data-page="home">⌂ Home</button>
+      <button data-page="executive">▦ Executive Overview</button>
+      <button data-page="reentry">↻ Re-entry Analysis</button>
+      <button data-page="momentum">⚡ Momentum Analysis</button>
+      <button data-page="content">◈ Content Analysis</button>
+      <button data-page="fandom">♥ Fandom Intensity</button>
+      <button data-page="methodology">◎ Methodology & EDA</button>
+    </nav>
+    <div class="side-note">Built from the supplied cleaned Top 50 dataset, re-entry events, fandom leaderboard, Python notebook, EDA report and Power BI design.</div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div><div class="eyebrow">South Korea Top 50 · 2024–2025</div><h2 id="pageTitle">K-Pop Comeback Intelligence</h2></div>
+      <div class="top-actions"><button class="btn" onclick="resetFilters()">Reset Filters</button><button class="btn primary" onclick="window.print()">Export / Print</button></div>
+    </div>
+
+    <div class="filters" id="globalFilters">
+      <div class="field"><label>Artist</label><select id="artistFilter"><option value="">All artists</option></select></div>
+      <div class="field"><label>Song</label><select id="songFilter"><option value="">All songs</option></select></div>
+      <div class="field"><label>Album Type</label><select id="albumFilter"><option value="">All</option><option value="single">Single</option><option value="album">Album</option></select></div>
+      <div class="field"><label>From</label><input type="date" id="fromDate" value="2024-05-18"></div>
+      <div class="field"><label>To</label><input type="date" id="toDate" value="2025-11-27"></div>
+      <div class="field"><label>Data</label><select id="dataScope"><option value="reentry">Re-entry events</option><option value="fandom">Fandom leaderboard</option></select></div>
+    </div>
+
+    <section class="page active" id="home">
+      <div class="hero">
+        <div class="eyebrow">Portfolio Project · Data Analytics · Power BI → Web</div>
+        <h3>Chart <span>Re-entry.</span><br/>Comeback <span>Momentum.</span><br/>Fandom <span>Signals.</span></h3>
+        <p>An interactive web portfolio for the South Korea Top 50 playlist project. It converts the supplied Power BI story into a responsive web experience while preserving the project's original analytical definitions: re-entry detection, Momentum Spike Score, recovery behavior, content attributes and the Fandom Intensity Proxy.</p>
+        <div class="hero-tags"><span class="tag">27,750 playlist observations</span><span class="tag">555 observed dates</span><span class="tag">835 re-entry events</span><span class="tag">224 songs with re-entry</span><span class="tag">134 fandom records</span></div>
+      </div>
+      <div class="section-title">What this project answers</div>
+      <div class="insights">
+        <div class="insight"><strong>When do songs come back?</strong><p>Track exits, re-entries, absence gaps and comeback frequency across the Top 50.</p></div>
+        <div class="insight"><strong>How strong is the comeback?</strong><p>Combine rank jump, popularity change, recovery speed and retention into Momentum Spike Score.</p></div>
+        <div class="insight"><strong>Which songs show recurring chart behavior?</strong><p>Use a behavioral Fandom Intensity Proxy built from re-entry frequency, rank recovery, recovery speed and retention.</p></div>
+      </div>
+      <div class="section-title">Portfolio preview</div>
+      <div class="gallery">
+        <img src="assets/powerbi-page-1.png" alt="Power BI home page">
+        <img src="assets/powerbi-page-2.png" alt="Power BI executive overview">
+        <img src="assets/powerbi-page-3.png" alt="Power BI re-entry analysis">
+        <img src="assets/powerbi-page-4.png" alt="Power BI content analysis">
+        <img src="assets/powerbi-page-5.png" alt="Power BI momentum analysis">
+        <img src="assets/powerbi-page-6.png" alt="Power BI fandom intensity">
+      </div>
+    </section>
+
+    <section class="page" id="executive">
+      <div class="eyebrow">01 · Executive Overview</div>
+      <h3 class="section-title">Market-level comeback pulse</h3>
+      <div class="grid kpis" id="execKpis"></div>
+      <div class="grid cols-2">
+        <div class="card"><h4>South Korea Comeback Activity Over Time</h4><div id="execTimeline" class="chart"></div></div>
+        <div class="card"><h4>Album Type Distribution</h4><div id="albumDonut" class="chart"></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h4>Top Re-entry Songs</h4><div id="topReentry" class="chart"></div></div>
+        <div class="card"><h4>Re-entry Events by Artist</h4><div id="artistConcentration" class="chart"></div></div>
+      </div>
+      <div class="section-title">Executive observations</div>
+      <div class="insights" id="execInsights"></div>
+    </section>
+
+    <section class="page" id="reentry">
+      <div class="eyebrow">02 · Chart Re-entry Analysis</div>
+      <h3 class="section-title">Re-entry is the core event</h3>
+      <p class="section-copy">A re-entry is treated as a new chart run after at least one observed day outside the Top 50. The supplied notebook groups consecutive observed dates into runs and flags later runs as re-entries.</p>
+      <div class="grid kpis" id="reKpis"></div>
+      <div class="grid cols-2">
+        <div class="card"><h4>Re-entry Timeline</h4><div id="reTimeline" class="chart"></div></div>
+        <div class="card"><h4>Re-entry Frequency by Song</h4><div id="reSongBar" class="chart"></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h4>Days Between Exit and Re-entry</h4><div id="gapBar" class="chart"></div></div>
+        <div class="card"><h4>Recent Re-entry Events</h4><div class="table-wrap"><table class="data-table"><thead><tr><th>Song</th><th>Artist</th><th>Start</th><th>Gap</th><th>Start Rank</th><th>Rank Jump</th></tr></thead><tbody id="reTable"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="momentum">
+      <div class="eyebrow">03 · Comeback Momentum</div>
+      <h3 class="section-title">Intensity, recovery and persistence</h3>
+      <div class="grid kpis" id="momKpis"></div>
+      <div class="grid cols-2">
+        <div class="card"><h4>Top Songs by Average Momentum</h4><div id="momTop" class="chart"></div></div>
+        <div class="card"><h4>Momentum Distribution</h4><div id="momDonut" class="chart"></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h4>Momentum vs Retention vs Rank Jump</h4><div id="momScatter" class="chart"></div></div>
+        <div class="card"><h4>Momentum by Explicit Status</h4><div id="explicitMom" class="chart"></div></div>
+      </div>
+      <div class="section-title">Score definition</div>
+      <div class="card"><p class="section-copy">Momentum Spike Score = 40% normalized rank jump + 20% normalized popularity change + 20% recovery speed + 20% retention, scaled to 0–100. The rank-jump component has the largest weight, so momentum and rank recovery are closely related signals.</p></div>
+    </section>
+
+    <section class="page" id="content">
+      <div class="eyebrow">04 · Content Attribute Analysis</div>
+      <h3 class="section-title">Format, explicit status, album size and duration</h3>
+      <div class="grid cols-2-eq">
+        <div class="card"><h4>Momentum by Album Type</h4><div id="albumMom" class="chart sm"></div></div>
+        <div class="card"><h4>Retention by Album Type</h4><div id="albumRet" class="chart sm"></div></div>
+      </div>
+      <div class="grid cols-2-eq" style="margin-top:14px">
+        <div class="card"><h4>Recovery by Album Type</h4><div id="albumRec" class="chart sm"></div></div>
+        <div class="card"><h4>Momentum by Explicit Status</h4><div id="contentExp" class="chart sm"></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h4>Album Size vs Momentum</h4><div id="albumSize" class="chart"></div></div>
+        <div class="card"><h4>Song Duration vs Momentum</h4><div id="durationScatter" class="chart"></div></div>
+      </div>
+      <div class="section-title">Interpretation</div>
+      <div class="insights">
+        <div class="insight"><strong>Single vs album</strong><p>The supplied EDA reports nearly identical average momentum, while album tracks show longer average retention and recovery time.</p></div>
+        <div class="insight"><strong>Album size</strong><p>The reported linear correlation with momentum is approximately -0.006, effectively zero in this sample.</p></div>
+        <div class="insight"><strong>Song duration</strong><p>The reported linear correlation with momentum is approximately 0.014, also close to zero.</p></div>
+      </div>
+    </section>
+
+    <section class="page" id="fandom">
+      <div class="eyebrow">05 · Fandom Intensity</div>
+      <h3 class="section-title">Chart-behavior proxy, not fan count</h3>
+      <p class="section-copy">The Fandom Intensity Proxy is a composite behavioral signal based on re-entry frequency, rank recovery, recovery speed and retention. It should not be presented as direct fandom size, sentiment or coordinated streaming.</p>
+      <div class="grid kpis" id="fanKpis"></div>
+      <div class="grid cols-2">
+        <div class="card"><h4>Fandom Intensity Leaderboard</h4><div id="fanBar" class="chart"></div></div>
+        <div class="card"><h4>Re-entry Frequency</h4><div id="fanFreq" class="chart"></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h4>Average Recovery Speed</h4><div id="fanRecovery" class="chart"></div></div>
+        <div class="card"><h4>Detailed Leaderboard</h4><div class="table-wrap"><table class="data-table"><thead><tr><th>Song</th><th>Artist</th><th>Reentries</th><th>Avg Rank Jump</th><th>Avg Recovery</th><th>Proxy</th></tr></thead><tbody id="fanTable"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="methodology">
+      <div class="eyebrow">06 · Methodology & EDA</div>
+      <h3 class="section-title">From raw playlist snapshots to portfolio insight</h3>
+      <p class="section-copy">This page documents the supplied notebook methodology and the EDA report findings so the web portfolio remains auditable.</p>
+      <div class="workflow">
+        <div class="step"><div class="n">01</div><strong>Clean</strong><span>Normalize song + artist IDs, convert duration and validate 50 records per observed date.</span></div>
+        <div class="step"><div class="n">02</div><strong>Detect runs</strong><span>Sort by song and date; a gap greater than one day starts a new chart run.</span></div>
+        <div class="step"><div class="n">03</div><strong>Measure comeback</strong><span>Calculate re-entry gap, rank jump, popularity change, retention and days to best rank.</span></div>
+        <div class="step"><div class="n">04</div><strong>Score momentum</strong><span>Weighted normalized composite: rank jump 40%, popularity 20%, recovery 20%, retention 20%.</span></div>
+        <div class="step"><div class="n">05</div><strong>Proxy fandom</strong><span>Combine frequency, rank recovery, speed and retention into a behavioral intensity score.</span></div>
+      </div>
+      <div class="section-title">Project facts</div>
+      <div class="grid cols-3">
+        <div class="card"><h4>Dataset</h4><p class="section-copy">27,750 cleaned playlist observations across 555 observed dates, 537 unique song-artist combinations and 194 artists.</p></div>
+        <div class="card"><h4>Re-entry layer</h4><p class="section-copy">835 comeback events across 224 songs. Median re-entry gap: 2 days. Mean gap: 6.52 days.</p></div>
+        <div class="card"><h4>Fandom layer</h4><p class="section-copy">134 songs in the supplied leaderboard, using chart behavior as a proxy rather than a direct fan measurement.</p></div>
+      </div>
+      <div class="section-title">Key limitations</div>
+      <div class="insights">
+        <div class="insight"><strong>No direct streaming data</strong><p>The Top 50 snapshot does not directly contain streams, listeners, sales or fan counts.</p></div>
+        <div class="insight"><strong>Constructed indexes</strong><p>Momentum and fandom scores depend on normalization and weighting choices; alternative weights can change values.</p></div>
+        <div class="insight"><strong>Association, not causation</strong><p>The current data cannot establish why a song re-entered. Campaign/event metadata would be needed for causal analysis.</p></div>
+      </div>
+      <div class="section-title">Original project files</div>
+      <div class="card" id="downloads"></div>
+    </section>
+
+    <div class="footer">K-Pop Comeback Intelligence · Portfolio web app rebuilt from the supplied project artifacts · Interactive charts powered by Plotly</div>
+  </main>
+</div>
+
+<script>
+const DATA = {};
+const state = {artist:"", song:"", album:"", from:"2024-05-18", to:"2025-11-27"};
+
+async function loadData(){
+  const files=["metrics","timeline","artist_counts","top_reentries","album_summary","explicit_summary","gap_buckets","momentum_buckets","reentries","fandom","songs"];
+  const vals=await Promise.all(files.map(f=>fetch(`data/${f}.json`).then(r=>r.json())));
+  files.forEach((f,i)=>DATA[f]=vals[i]);
+  initFilters();
+  renderAll();
+  renderDownloads();
+}
+function initFilters(){
+  const artists=[...new Set(DATA.reentries.map(d=>d.artist).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const songs=[...new Map(DATA.songs.map(d=>[d.song_id,d])).values()].sort((a,b)=>a.song.localeCompare(b.song));
+  const a=document.getElementById("artistFilter"), s=document.getElementById("songFilter");
+  artists.forEach(x=>{const o=document.createElement("option");o.value=x;o.textContent=x;a.appendChild(o)});
+  songs.forEach(x=>{const o=document.createElement("option");o.value=x.song_id;o.textContent=`${x.song} — ${x.artist}`;s.appendChild(o)});
+  ["artistFilter","songFilter","albumFilter","fromDate","toDate"].forEach(id=>document.getElementById(id).addEventListener("change",()=>{syncState();renderAll()}));
+}
+function syncState(){
+  state.artist=document.getElementById("artistFilter").value;
+  state.song=document.getElementById("songFilter").value;
+  state.album=document.getElementById("albumFilter").value;
+  state.from=document.getElementById("fromDate").value;
+  state.to=document.getElementById("toDate").value;
+}
+function resetFilters(){
+  document.getElementById("artistFilter").value="";
+  document.getElementById("songFilter").value="";
+  document.getElementById("albumFilter").value="";
+  document.getElementById("fromDate").value="2024-05-18";
+  document.getElementById("toDate").value="2025-11-27";
+  syncState(); renderAll();
+}
+function filteredRe(){
+  return DATA.reentries.filter(d=>{
+    if(state.artist && d.artist!==state.artist) return false;
+    if(state.song && d.song_id!==state.song) return false;
+    if(state.album && d.album_type!==state.album) return false;
+    if(state.from && d.start_date<state.from) return false;
+    if(state.to && d.start_date>state.to) return false;
+    return true;
+  });
+}
+function filteredFan(){
+  return DATA.fandom.filter(d=>{
+    if(state.artist && d.artist!==state.artist) return false;
+    if(state.song && d.song_id!==state.song) return false;
+    if(state.album && d.album_type!==state.album) return false;
+    return true;
+  });
+}
+const fmt=n=>Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});
+const pct=n=>`${fmt(n)}%`;
+function plot(id,traces,layout={}){
+  const base={paper_bgcolor:"transparent",plot_bgcolor:"transparent",font:{family:"Inter",color:"#aeb6c7",size:10},
+    margin:{l:48,r:18,t:8,b:44},xaxis:{gridcolor:"#252a36",zerolinecolor:"#252a36"},yaxis:{gridcolor:"#252a36",zerolinecolor:"#252a36"},
+    hoverlabel:{bgcolor:"#111522",font:{color:"#fff"}},showlegend:false};
+  Plotly.react(id,traces,Object.assign(base,layout),{responsive:true,displayModeBar:false});
+}
+function barData(rows,y,x,name){
+  return [{type:"bar",orientation:"h",y:rows.map(d=>d[y]),x:rows.map(d=>+d[x]),text:rows.map(d=>fmt(d[x])),textposition:"outside",cliponaxis:false,
+    marker:{color:rows.map((_,i)=>i%2?"#9b6cff":"#27e7ef")},hovertemplate:`%{y}<br>%{x:.2f}<extra></extra>`}]
+}
+function kpi(container,items){document.getElementById(container).innerHTML=items.map(x=>`<div class="kpi"><div class="label">${x[0]}</div><div class="value">${x[1]}</div><div class="hint">${x[2]||""}</div></div>`).join("")}
+function renderAll(){renderExecutive();renderReentry();renderMomentum();renderContent();renderFandom();}
+
+function renderExecutive(){
+  const r=filteredRe();
+  const songs=new Set(r.map(d=>d.song_id)).size, artists=new Set(r.map(d=>d.artist)).size;
+  kpi("execKpis",[
+    ["Playlist observations",fmt(DATA.metrics.playlist_rows),"Cleaned Top 50 panel"],
+    ["Re-entry events",fmt(r.length),"Filtered comeback events"],
+    ["Songs with re-entry",fmt(songs),"Unique song IDs"],
+    ["Average momentum",fmt(r.length?r.reduce((a,d)=>a+d.momentum_spike_score,0)/r.length:0),"Momentum Spike Score"],
+    ["Average retention",fmt(r.length?r.reduce((a,d)=>a+d.days,0)/r.length:0)+" days","Post-comeback run length"]
+  ]);
+  const t={}; r.forEach(d=>{const k=d.start_date.slice(0,7);t[k]=(t[k]||0)+1});const tr=Object.entries(t).sort().map(([date,reentries])=>({date,reentries}));
+  plot("execTimeline",[{x:tr.map(d=>d.date),y:tr.map(d=>d.reentries),type:"scatter",mode:"lines",fill:"tozeroy",line:{color:"#ff3eb5",width:2},fillcolor:"rgba(255,62,181,.12)"}],{xaxis:{title:""},yaxis:{title:"Re-entry count"}});
+  const alb={};r.forEach(d=>alb[d.album_type]=(alb[d.album_type]||0)+1);
+  plot("albumDonut",[{labels:Object.keys(alb),values:Object.values(alb),type:"pie",hole:.62,marker:{colors:["#27e7ef","#9b6cff"]},textinfo:"label+percent"}],{margin:{l:5,r:5,t:10,b:10},showlegend:true,legend:{font:{color:"#aeb6c7"}}});
+  const ts=Object.values(r.reduce((m,d)=>{const k=d.song+"|||"+d.artist;m[k]??={song:d.song,artist:d.artist,reentries:0};m[k].reentries++;return m},{})).sort((a,b)=>b.reentries-a.reentries).slice(0,10);
+  plot("topReentry",barData(ts,"song","reentries"),{yaxis:{autorange:"reversed"},xaxis:{title:"Re-entry events"}});
+  const ac=Object.values(r.reduce((m,d)=>{m[d.artist]??={artist:d.artist,reentries:0};m[d.artist].reentries++;return m},{})).sort((a,b)=>b.reentries-a.reentries).slice(0,10);
+  plot("artistConcentration",barData(ac,"artist","reentries"),{yaxis:{autorange:"reversed"},xaxis:{title:"Events"}});
+  const top5=ac.slice(0,5).reduce((a,d)=>a+d.reentries,0); const share=r.length?top5/r.length*100:0;
+  document.getElementById("execInsights").innerHTML=[
+    ["Re-entry concentration",`${pct(share)} of filtered events come from the top five artists.`],
+    ["Short comeback runs",`The filtered median retention is ${fmt(r.length?median(r.map(d=>d.days)):0)} days.`],
+    ["Rank recovery",`${pct(r.length?(r.filter(d=>d.rank_jump>0).length/r.length*100):0)} of filtered events improve the prior run's ending rank.`]
+  ].map(x=>`<div class="insight"><strong>${x[0]}</strong><p>${x[1]}</p></div>`).join("");
+}
+function median(a){if(!a.length)return 0;const s=[...a].sort((a,b)=>a-b),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}
+
+function renderReentry(){
+  const r=filteredRe();
+  kpi("reKpis",[["Re-entry events",fmt(r.length)],["Songs with re-entry",fmt(new Set(r.map(d=>d.song_id)).size)],["Median gap",fmt(median(r.map(d=>d.gap_days)))+" days"],["Mean gap",fmt(r.length?r.reduce((a,d)=>a+d.gap_days,0)/r.length:0)+" days"],["Improved prior rank",pct(r.length?r.filter(d=>d.rank_jump>0).length/r.length*100:0)]]);
+  const t={};r.forEach(d=>{t[d.start_date]=(t[d.start_date]||0)+1});const tr=Object.entries(t).sort().map(([date,n])=>({date,n}));
+  plot("reTimeline",[{x:tr.map(d=>d.date),y:tr.map(d=>d.n),type:"scatter",mode:"lines",line:{color:"#ff3eb5",width:2},fill:"tozeroy",fillcolor:"rgba(255,62,181,.12)"}],{yaxis:{title:"Re-entry count"}});
+  const songs=Object.values(r.reduce((m,d)=>{const k=d.song+"|||"+d.artist;m[k]??={song:d.song,artist:d.artist,n:0};m[k].n++;return m},{})).sort((a,b)=>b.n-a.n).slice(0,10);
+  plot("reSongBar",barData(songs,"song","n"),{yaxis:{autorange:"reversed"},xaxis:{title:"Count"}});
+  const buckets=[["1–2 Days",r.filter(d=>d.gap_days<=2).length],["3–7 Days",r.filter(d=>d.gap_days>=3&&d.gap_days<=7).length],["8–14 Days",r.filter(d=>d.gap_days>=8&&d.gap_days<=14).length],["15–30 Days",r.filter(d=>d.gap_days>=15&&d.gap_days<=30).length],["31+ Days",r.filter(d=>d.gap_days>=31).length]];
+  plot("gapBar",[{type:"bar",x:buckets.map(x=>x[0]),y:buckets.map(x=>x[1]),marker:{color:"#27e7ef"}}],{xaxis:{title:"Gap bucket"},yaxis:{title:"Events"}});
+  document.getElementById("reTable").innerHTML=r.sort((a,b)=>b.start_date.localeCompare(a.start_date)).slice(0,25).map(d=>`<tr><td>${esc(d.song)}</td><td>${esc(d.artist)}</td><td>${d.start_date.slice(0,10)}</td><td>${fmt(d.gap_days)}d</td><td>${fmt(d.start_rank)}</td><td><span class="pill ${d.rank_jump>0?"cyan":"pink"}">${fmt(d.rank_jump)}</span></td></tr>`).join("");
+}
+function renderMomentum(){
+  const r=filteredRe(); const avg=r.length?r.reduce((a,d)=>a+d.momentum_spike_score,0)/r.length:0;
+  kpi("momKpis",[["Max momentum",fmt(r.length?Math.max(...r.map(d=>d.momentum_spike_score)):0)],["Average rank jump",fmt(r.length?r.reduce((a,d)=>a+d.rank_jump,0)/r.length:0)],["Average recovery",fmt(r.length?r.reduce((a,d)=>a+d.days_to_best,0)/r.length:0)+" days"],["Median momentum",fmt(median(r.map(d=>d.momentum_spike_score)))],["Median retention",fmt(median(r.map(d=>d.days)))+" days"]]);
+  const top=Object.values(r.reduce((m,d)=>{const k=d.song+"|||"+d.artist;m[k]??={song:d.song,artist:d.artist,sum:0,n:0};m[k].sum+=d.momentum_spike_score;m[k].n++;return m},{})).map(x=>({...x,avg:x.sum/x.n})).sort((a,b)=>b.avg-a.avg).slice(0,10);
+  plot("momTop",barData(top,"song","avg"),{yaxis:{autorange:"reversed"},xaxis:{title:"Average Momentum"}});
+  const cats=[["Low (0–49)",r.filter(d=>d.momentum_spike_score<50).length],["Medium (50–74)",r.filter(d=>d.momentum_spike_score>=50&&d.momentum_spike_score<75).length],["High (75+)",r.filter(d=>d.momentum_spike_score>=75).length]];
+  plot("momDonut",[{labels:cats.map(x=>x[0]),values:cats.map(x=>x[1]),type:"pie",hole:.6,marker:{colors:["#27e7ef","#9b6cff","#ff3eb5"]},textinfo:"label+percent"}],{margin:{l:5,r:5,t:10,b:10},showlegend:true,legend:{font:{color:"#aeb6c7"}}});
+  plot("momScatter",[{x:r.map(d=>d.rank_jump),y:r.map(d=>d.days),mode:"markers",type:"scatter",marker:{size:r.map(d=>Math.max(6,Math.min(24,d.momentum_spike_score/4))),color:r.map(d=>d.momentum_spike_score),colorscale:[[0,"#27e7ef"],[.5,"#9b6cff"],[1,"#ff3eb5"]],showscale:true,colorbar:{title:"Momentum"}},text:r.map(d=>d.song),hovertemplate:"%{text}<br>Rank jump: %{x}<br>Retention: %{y} days<extra></extra>"}],{xaxis:{title:"Rank jump"},yaxis:{title:"Retention days"}});
+  const ex=Object.values(r.reduce((m,d)=>{const k=d.is_explicit?"Explicit":"Clean";m[k]??={label:k,sum:0,n:0};m[k].sum+=d.momentum_spike_score;m[k].n++;return m},{})).map(x=>({...x,avg:x.sum/x.n}));
+  plot("explicitMom",[{type:"bar",x:ex.map(x=>x.label),y:ex.map(x=>x.avg),marker:{color:["#27e7ef","#ff3eb5"]},text:ex.map(x=>fmt(x.avg)),textposition:"outside"}],{yaxis:{title:"Average Momentum"}});
+}
+function renderContent(){
+  const r=filteredRe();
+  const alb=Object.values(r.reduce((m,d)=>{const k=d.album_type;m[k]??={type:k,n:0,m:0,ret:0,rec:0};m[k].n++;m[k].m+=d.momentum_spike_score;m[k].ret+=d.days;m[k].rec+=d.days_to_best;return m},{})).map(x=>({...x,avg:x.m/x.n,ret:x.ret/x.n,rec:x.rec/x.n}));
+  const types=alb.sort((a,b)=>a.type.localeCompare(b.type));
+  plot("albumMom",[{x:types.map(x=>x.type),y:types.map(x=>x.avg),type:"bar",marker:{color:["#27e7ef","#9b6cff"]},text:types.map(x=>fmt(x.avg)),textposition:"outside"}],{yaxis:{title:"Avg momentum"}});
+  plot("albumRet",[{x:types.map(x=>x.type),y:types.map(x=>x.ret),type:"bar",marker:{color:["#ff3eb5","#9b6cff"]},text:types.map(x=>fmt(x.ret)),textposition:"outside"}],{yaxis:{title:"Retention days"}});
+  plot("albumRec",[{x:types.map(x=>x.type),y:types.map(x=>x.rec),type:"bar",marker:{color:["#27e7ef","#ff3eb5"]},text:types.map(x=>fmt(x.rec)),textposition:"outside"}],{yaxis:{title:"Recovery days"}});
+  const ex=Object.values(r.reduce((m,d)=>{const k=d.is_explicit?"Explicit":"Clean";m[k]??={k,n:0,m:0};m[k].n++;m[k].m+=d.momentum_spike_score;return m},{})).map(x=>({...x,avg:x.m/x.n}));
+  plot("contentExp",[{x:ex.map(x=>x.k),y:ex.map(x=>x.avg),type:"bar",marker:{color:["#27e7ef","#ff3eb5"]}}],{yaxis:{title:"Average momentum"}});
+  const bySize=Object.values(r.reduce((m,d)=>{const k=d.total_tracks;m[k]??={x:k,s:0,n:0};m[k].s+=d.momentum_spike_score;m[k].n++;return m},{})).map(x=>({x:+x.x,y:x.s/x.n})).sort((a,b)=>a.x-b.x);
+  plot("albumSize",[{x:bySize.map(x=>x.x),y:bySize.map(x=>x.y),mode:"lines+markers",type:"scatter",line:{color:"#27e7ef"},marker:{size:7}}],{xaxis:{title:"Total tracks"},yaxis:{title:"Average momentum"}});
+  const durationMap={}; DATA.songs.forEach(d=>durationMap[d.song_id]=d.duration_min);
+  const bySong=Object.values(r.reduce((m,d)=>{const k=d.song_id;m[k]??={x:durationMap[k],s:0,n:0,song:d.song};m[k].s+=d.momentum_spike_score;m[k].n++;return m},{})).filter(x=>Number.isFinite(x.x)).map(x=>({x:x.x,y:x.s/x.n,song:x.song}));
+  plot("durationScatter",[{x:bySong.map(x=>x.x),y:bySong.map(x=>x.y),mode:"markers",type:"scatter",marker:{size:8,color:"#ff3eb5"},text:bySong.map(x=>x.song),hovertemplate:"%{text}<br>Duration: %{x:.2f} min<br>Momentum: %{y:.2f}<extra></extra>"}],{xaxis:{title:"Song duration (min)"},yaxis:{title:"Average momentum"}});
+}
+function renderFandom(){
+  const f=filteredFan();
+  const avg=f.length?f.reduce((a,d)=>a+d.fandom_intensity_proxy,0)/f.length:0, max=f.length?Math.max(...f.map(d=>d.fandom_intensity_proxy)):0;
+  kpi("fanKpis",[["Average fandom intensity",fmt(avg)],["Highest intensity",fmt(max)],["Songs analyzed",fmt(f.length)],["Total re-entries",fmt(f.reduce((a,d)=>a+d.reentries,0))],["Avg recovery speed",fmt(f.length?f.reduce((a,d)=>a+d.avg_days_to_best,0)/f.length:0)+" days"]]);
+  const top=[...f].sort((a,b)=>b.fandom_intensity_proxy-a.fandom_intensity_proxy).slice(0,10);
+  plot("fanBar",barData(top,"song","fandom_intensity_proxy"),{yaxis:{autorange:"reversed"},xaxis:{title:"Proxy score"}});
+  const freq=[...f].sort((a,b)=>b.reentries-a.reentries).slice(0,10);plot("fanFreq",barData(freq,"song","reentries"),{yaxis:{autorange:"reversed"},xaxis:{title:"Re-entries"}});
+  const rec=[...f].sort((a,b)=>a.avg_days_to_best-b.avg_days_to_best).slice(0,10);plot("fanRecovery",barData(rec,"song","avg_days_to_best"),{yaxis:{autorange:"reversed"},xaxis:{title:"Days to best rank"}});
+  document.getElementById("fanTable").innerHTML=[...f].sort((a,b)=>b.fandom_intensity_proxy-a.fandom_intensity_proxy).slice(0,30).map(d=>`<tr><td>${esc(d.song)}</td><td>${esc(d.artist)}</td><td>${fmt(d.reentries)}</td><td>${fmt(d.avg_rank_jump)}</td><td>${fmt(d.avg_days_to_best)}d</td><td><span class="pill cyan">${fmt(d.fandom_intensity_proxy)}</span></td></tr>`).join("");
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function renderDownloads(){
+  document.getElementById("downloads").innerHTML=[
+    ["Power BI report","project-files/South_Korea_Top50_Dashboard.pbix"],
+    ["Cleaned playlist dataset","project-files/cleaned_playlist.csv"],
+    ["Re-entry event dataset","project-files/reentry_events.csv"],
+    ["Fandom leaderboard dataset","project-files/fandom_leaderboard.csv"],
+    ["Python / Colab notebook","project-files/analysis_notebook.ipynb"],
+    ["EDA report","project-files/EDA_Report.docx"]
+  ].map(x=>`<p style="margin:8px 0"><a href="${x[1]}" download style="color:#27e7ef;font-weight:700">${x[0]}</a></p>`).join("");
+}
+document.querySelectorAll(".nav button").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(btn.dataset.page).classList.add("active");
+  const titles={home:"K-Pop Comeback Intelligence",executive:"Executive Overview",reentry:"Chart Re-entry Analysis",momentum:"Comeback Momentum",content:"Content Attribute Analysis",fandom:"Fandom Intensity",methodology:"Methodology & EDA"};
+  document.getElementById("pageTitle").textContent=titles[btn.dataset.page];
+  window.scrollTo({top:0,behavior:"smooth"});
+}));
+loadData().catch(err=>{document.body.innerHTML='<div style="padding:40px;color:white;font-family:Inter">Unable to load dashboard data. Run this folder through a local web server (for example: <b>python -m http.server</b>) rather than opening index.html directly.</div>';console.error(err)});
+</script>
+</body>
+</html>
